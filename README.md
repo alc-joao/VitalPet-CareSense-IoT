@@ -129,13 +129,13 @@ para visualizar mudanças no dashboard.
 
 ## Circuito ESP32
 
-Adicionar print do circuito aqui.
+![alt text](image.png)
 
 ---
 
 ## Simulação Wokwi
 
-Adicionar print da simulação aqui.
+![alt text](image-1.png)
 
 ---
 
