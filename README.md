@@ -147,11 +147,15 @@ Dashboard:
 https://github.com/alc-joao/VitalPet-CareSense-Dashboard
 ```
 
+```txt
+https://vital-pet-care-sense-dashboard.vercel.app/
+```
+
 ---
 
 # 🎥 Vídeo Pitch
 
-Adicionar link do YouTube não listado aqui.
+https://youtu.be/V01GOaKJrWY
 
 ---
 
