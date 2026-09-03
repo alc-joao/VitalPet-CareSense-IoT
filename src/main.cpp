@@ -6,7 +6,6 @@
 
 #define DHT_PIN 15
 #define PIR_PIN 13
-
 #define LED_GREEN 2
 #define LED_RED 4
 
@@ -18,16 +17,33 @@ const char* serverUrl =
 
 DHTesp dht;
 
-void setup() {
-  Serial.begin(115200);
+String classificarAmbiente(
+  float temperatura,
+  float umidade,
+  bool presenca
+) {
+  if (temperatura >= 33 && presenca) {
+    return "CRITICO";
+  }
 
-  pinMode(PIR_PIN, INPUT);
+  if (temperatura >= 30 || umidade < 35) {
+    return "ATENCAO";
+  }
 
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_RED, OUTPUT);
+  return "SEGURO";
+}
 
-  dht.setup(DHT_PIN, DHTesp::DHT22);
+void configurarLeds(const String& status) {
+  if (status == "SEGURO") {
+    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_RED, LOW);
+  } else {
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_RED, HIGH);
+  }
+}
 
+void conectarWiFi() {
   WiFi.begin(ssid, password);
 
   Serial.print("Conectando ao WiFi");
@@ -37,7 +53,75 @@ void setup() {
     Serial.print(".");
   }
 
-  Serial.println("\nWiFi conectado!");
+  Serial.println();
+  Serial.println("WiFi conectado!");
+  Serial.print("IP: ");
+  Serial.println(WiFi.localIP());
+}
+
+void enviarDados(
+  float temperatura,
+  float umidade,
+  bool presenca
+) {
+  if (WiFi.status() != WL_CONNECTED) {
+    Serial.println("WiFi desconectado. Tentando reconectar...");
+    conectarWiFi();
+    return;
+  }
+
+  WiFiClientSecure client;
+  client.setInsecure();
+
+  HTTPClient http;
+
+  http.begin(client, serverUrl);
+  http.addHeader("Content-Type", "application/json");
+
+  String json = "{";
+  json += "\"temperatura\":" + String(temperatura, 1) + ",";
+  json += "\"umidade\":" + String(umidade, 1) + ",";
+  json += "\"presenca\":";
+  json += presenca ? "true" : "false";
+  json += "}";
+
+  Serial.println();
+  Serial.println("Enviando dados para o VitalPet Dashboard...");
+  Serial.print("Payload: ");
+  Serial.println(json);
+
+  int responseCode = http.POST(json);
+
+  Serial.print("HTTP Response: ");
+  Serial.println(responseCode);
+
+  if (responseCode > 0) {
+    String response = http.getString();
+
+    Serial.print("Resposta da API: ");
+    Serial.println(response);
+  } else {
+    Serial.println("Falha na comunicação com a API.");
+  }
+
+  http.end();
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  pinMode(PIR_PIN, INPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+
+  dht.setup(DHT_PIN, DHTesp::DHT22);
+
+  conectarWiFi();
+
+  Serial.println();
+  Serial.println("=================================");
+  Serial.println("   VitalPet CareSense IoT");
+  Serial.println("=================================");
 }
 
 void loop() {
@@ -45,63 +129,51 @@ void loop() {
 
   float temperatura = dados.temperature;
   float umidade = dados.humidity;
-
   bool presenca = digitalRead(PIR_PIN) == HIGH;
 
-  bool alerta =
-    temperatura >= 30 ||
-    umidade <= 35 ||
-    presenca;
-
-  if (alerta) {
-    digitalWrite(LED_RED, HIGH);
-    digitalWrite(LED_GREEN, LOW);
-  } else {
-    digitalWrite(LED_RED, LOW);
-    digitalWrite(LED_GREEN, HIGH);
+  if (isnan(temperatura) || isnan(umidade)) {
+    Serial.println("Erro ao realizar leitura do DHT22.");
+    delay(3000);
+    return;
   }
 
-  Serial.println("===== VitalPet CareSense =====");
+  String status =
+    classificarAmbiente(
+      temperatura,
+      umidade,
+      presenca
+    );
+
+  configurarLeds(status);
+
+  Serial.println();
+  Serial.println("===== Leitura CareSense =====");
 
   Serial.print("Temperatura: ");
-  Serial.print(temperatura);
+  Serial.print(temperatura, 1);
   Serial.println(" °C");
 
   Serial.print("Umidade: ");
-  Serial.print(umidade);
+  Serial.print(umidade, 1);
   Serial.println(" %");
 
-  Serial.print("Presença: ");
-  Serial.println(presenca ? "Detectada" : "Não detectada");
+  Serial.print("Presença do pet: ");
+  Serial.println(
+    presenca
+      ? "DETECTADA"
+      : "NÃO DETECTADA"
+  );
 
-  Serial.print("Status: ");
-  Serial.println(alerta ? "ALERTA" : "SEGURO");
+  Serial.print("Classificação local: ");
+  Serial.println(status);
 
-  if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure client;
-    client.setInsecure();
+  enviarDados(
+    temperatura,
+    umidade,
+    presenca
+  );
 
-    HTTPClient http;
-    http.begin(client, serverUrl);
-    http.addHeader("Content-Type", "application/json");
+  Serial.println("=================================");
 
-    String json = "{";
-    json += "\"temperatura\":" + String(temperatura, 1) + ",";
-    json += "\"umidade\":" + String(umidade, 1) + ",";
-    json += "\"presenca\":" + String(presenca ? "true" : "false");
-    json += "}";
-
-    int responseCode = http.POST(json);
-
-    Serial.print("JSON enviado: ");
-    Serial.println(json);
-
-    Serial.print("HTTP Response: ");
-    Serial.println(responseCode);
-
-    http.end();
-  }
-
-  Serial.println("--------------------------------");
-  delay(700);
+  delay(5000);
 }
