@@ -403,3 +403,10 @@ O CareSense é um protótipo acadêmico de apoio ao monitoramento ambiental e n�
 ## 🐾 VitalPet CareSense
 
 Projeto acadêmico desenvolvido para o Challenge Clyvo — FIAP.
+---
+
+## 🎥 Vídeo Demonstrativo — Sprint 3
+
+O vídeo apresenta o funcionamento do VitalPet CareSense, demonstrando a integração entre IoT, Dashboard e CareSense AI.
+
+**Link:** https://youtu.be/0aA5NGLn9Jo
