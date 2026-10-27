@@ -9,6 +9,82 @@
 
 ---
 
+## 🚀 Sprint 4 — Integração com CareSense AI v2
+
+Na Sprint 4, o protótipo IoT compõe a camada de aquisição de dados ambientais utilizada pela CareSense AI v2, implementada no repositório do Dashboard.
+
+### Papel do ESP32
+
+O ESP32 realiza:
+
+- Leitura de temperatura e umidade pelo sensor DHT22.
+- Detecção de presença pelo sensor PIR.
+- Classificação ambiental local em SEGURO, ATENCAO ou CRITICO.
+- Sinalização por LEDs verde e vermelho.
+- Envio periódico das leituras via HTTP POST e JSON para `/api/iot`.
+
+### Integração com a inteligência artificial
+
+O fluxo previsto é:
+
+```text
+ESP32 / Wokwi
+    |
+    v
+DHT22 + PIR
+    |
+    v
+POST /api/iot
+    |
+    v
+Dashboard
+    |
+    v
+POST /api/ia + perfil demonstrativo do pet
+    |
+    v
+CareSense AI v2
+    |
+    v
+Pontuação + risco + justificativa + recomendação
+```
+
+A CareSense AI v2 utiliza um motor de regras explicáveis. A análise considera temperatura, umidade, presença e características do pet. Raça e idade contribuem para a pontuação quando a temperatura é igual ou superior a 29°C.
+
+O motor de IA está no Dashboard, não no firmware do ESP32. A classificação local dos LEDs é independente da classificação personalizada da IA.
+
+### Comunicação e execução
+
+O firmware atual envia dados para:
+
+```text
+https://vital-pet-care-sense-dashboard.vercel.app/api/iot
+```
+
+Para testar com um servidor local, é necessário configurar um endereço acessível ao ESP32 ou ao simulador. `localhost` não representa automaticamente o computador host dentro do Wokwi.
+
+O Dashboard e seus testes automatizados estão disponíveis em:
+
+https://github.com/alc-joao/VitalPet-CareSense-Dashboard
+
+### Validação
+
+A integração entre `/api/iot` e `/api/ia` foi validada localmente com testes automatizados no repositório do Dashboard.
+
+A comunicação de ponta a ponta entre o ESP32/Wokwi e a aplicação publicada ainda precisa ser validada separadamente.
+
+### Limitações
+
+A API IoT atualmente mantém a última leitura em memória, sem banco de dados persistente. Em hospedagem serverless, a continuidade e o compartilhamento dessas leituras entre requisições não são garantidos.
+
+O sistema é um protótipo acadêmico preventivo e não substitui orientação veterinária.
+
+### Vídeo da Sprint 4
+
+O vídeo pitch de aproximadamente cinco minutos será adicionado após a gravação e publicação no YouTube em modo não listado.
+
+---
+
 ## 📌 Descrição do Projeto
 
 O VitalPet CareSense é uma solução de monitoramento inteligente de ambientes destinados a pets.
@@ -244,9 +320,9 @@ umidade < 35%
 O ambiente é classificado como crítico quando:
 
 ```text
-temperatura >= 33°C
-E
-presença = true
+temperatura >= 35°C
+OU
+(temperatura >= 33°C E presença = true)
 ```
 
 Essa classificação local é independente da análise contextual realizada posteriormente pelo CareSense AI.

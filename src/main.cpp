@@ -22,7 +22,7 @@ String classificarAmbiente(
   float umidade,
   bool presenca
 ) {
-  if (temperatura >= 33 && presenca) {
+  if (temperatura >= 35 || (temperatura >= 33 && presenca)) {
     return "CRITICO";
   }
 
