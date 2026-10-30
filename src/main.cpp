@@ -13,7 +13,7 @@ const char* ssid = "Wokwi-GUEST";
 const char* password = "";
 
 const char* serverUrl =
-  "https://vital-pet-care-sense-dashboard.vercel.app/api/iot";
+  "http://host.wokwi.internal:3000/api/iot";
 
 DHTesp dht;
 
@@ -70,8 +70,8 @@ void enviarDados(
     return;
   }
 
-  WiFiClientSecure client;
-  client.setInsecure();
+  WiFiClient client;
+
 
   HTTPClient http;
 

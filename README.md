@@ -486,3 +486,18 @@ Projeto acadêmico desenvolvido para o Challenge Clyvo — FIAP.
 O vídeo apresenta o funcionamento do VitalPet CareSense, demonstrando a integração entre IoT, Dashboard e CareSense AI.
 
 **Link:** https://youtu.be/0aA5NGLn9Jo
+
+## Vídeo de Apresentação — Sprint 4
+
+[Assistir no YouTube](https://youtu.be/aasAX4S92pk)
+
+## Como reproduzir a integração da Sprint 4
+
+1. Inicie o Dashboard local com `npm run dev`.
+2. Abra `http://localhost:3000`.
+3. Compile o firmware com PlatformIO.
+4. Inicie a simulação do ESP32 pelo Wokwi no VS Code.
+5. O ESP32 envia as leituras para `http://host.wokwi.internal:3000/api/iot`.
+6. Acompanhe as leituras e a análise de risco no Dashboard.
+
+A integração local foi utilizada na demonstração da Sprint 4.
